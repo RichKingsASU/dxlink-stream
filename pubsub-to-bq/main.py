@@ -10,6 +10,7 @@ TABLE = os.getenv("BQ_TABLE")  # e.g. "ttbot-466703.market_data.events"
 
 @app.route("/", methods=["POST"])
 def receive_event():
+    # parse CloudEvent
     try:
         event = from_http(request.headers, request.get_data())
     except:
@@ -20,6 +21,7 @@ def receive_event():
     evt_time = event["time"]
     now_utc  = datetime.now(timezone.utc).isoformat()
 
+    # build row for every non-nullable column
     row = {
       "received_at": now_utc,
       "event_type" : evt_type,
@@ -35,3 +37,8 @@ def receive_event():
         abort(500, "BigQuery insert failed")
 
     return ("", 204)
+
+if __name__ == "__main__":
+    # bind to 0.0.0.0 on the port Cloud Run sets
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host="0.0.0.0", port=port)
