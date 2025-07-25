@@ -1,26 +1,40 @@
+import os, json
+from datetime import datetime, timezone
+from flask import Flask, request, abort
+from cloudevents.http import from_http
 from google.cloud import bigquery
-import base64
-import json
 
-def pubsub_to_bq(event, context):
-    client = bigquery.Client()
-    dataset_id = "market_data"
-    table_id = "events"
+app = Flask(__name__)
+bq = bigquery.Client()
+TABLE = os.getenv("BQ_TABLE")  # should be set to "ttbot-466703.market_data.events"
 
-    # Parse Pub/Sub message
-    data = base64.b64decode(event['data']).decode('utf-8')
-    record = json.loads(data)
+@app.route("/", methods=["POST"])
+def receive_event():
+    # parse CloudEvent
+    try:
+        event = from_http(request.headers, request.get_data())
+    except Exception:
+        abort(400, "invalid CloudEvent")
 
+    # extract CloudEvent attributes + payload
+    data = event.data or {}
+    evt_type = event["type"]
+    evt_time = event["time"]          # CE time header → ISO8601
+    now_utc = datetime.now(timezone.utc).isoformat()
+
+    # build a row covering all non‐nullable columns
     row = {
-        "received_at": record.get("received_at"),
-        "event_type": record.get("event_type"),
-        "symbol": record.get("symbol"),
-        "raw_event": json.dumps(record.get("raw_event")),
+      "received_at": now_utc,
+      "event_type": evt_type,
+      "symbol": data.get("symbol"),
+      "raw_event": data.get("raw_event"),
+      "payload": data,
+      "event_utc": evt_time
     }
 
-    table_ref = client.dataset(dataset_id).table(table_id)
-    errors = client.insert_rows_json(table_ref, [row])
+    errors = bq.insert_rows_json(TABLE, [row])
     if errors:
-        print(f"BigQuery insert errors: {errors}")
-    else:
-        print(f"Inserted row: {row}")
+      app.logger.error("BQ insert errors: %s", errors)
+      abort(500, "BigQuery insert failed")
+
+    return ("", 204)
