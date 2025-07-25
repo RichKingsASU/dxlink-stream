@@ -1,1 +1,4 @@
 google-cloud-bigquery
+Flask>=2.0
+cloudevents>=1.0
+google-cloud-bigquery>=3.0.0
