@@ -3,3 +3,5 @@ Flask>=2.0
 cloudevents>=1.0
 Flask>=2.0
 cloudevents>=1.0
+Flask>=2.0
+cloudevents>=1.0
