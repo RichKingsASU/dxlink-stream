@@ -7,7 +7,7 @@ from google.cloud import pubsub_v1
 from google.api_core.exceptions import AlreadyExists
 
 # ─── CONFIG ──────────────────────────────────────────────
-PROJECT_ID = os.getenv("GCP_PROJECT", "ttbot-466703")
+PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("PROJECT_ID") or os.getenv("GCP_PROJECT") or "tt-production-468500"
 TOPIC      = os.getenv("PUBSUB_TOPIC", "my-streaming-ticks")
 SUB_ID     = os.getenv("PUBSUB_SUBSCRIPTION", "")
 SYMBOL     = os.getenv("SYMBOL", "SPY")

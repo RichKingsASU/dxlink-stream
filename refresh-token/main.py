@@ -1,8 +1,9 @@
+import os
 import requests
 import sys
 from google.cloud import secretmanager
 
-GCP_PROJECT_ID = "ttbot-466703"
+GCP_PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("PROJECT_ID") or "tt-production-468500"
 
 def access_secret(secret_id):
     client = secretmanager.SecretManagerServiceClient()
@@ -45,3 +46,6 @@ def refresh_token(request):
     set_secret("tastytrade-session-token", session_token)
     print("✅ Refreshed session token in Secret Manager.")
     return "OK", 200
+
+if __name__ == "__main__":
+    refresh_token(None)
