@@ -6,8 +6,15 @@ from tastytrade import Session, DXLinkStreamer
 from tastytrade.dxfeed import Greeks, Quote
 from tastytrade.instruments import get_option_chain
 from tastytrade.utils import get_tasty_monthly
+from decimal import Decimal
 
 PHX = ZoneInfo("America/Phoenix")
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return float(obj)
+        return super(DecimalEncoder, self).default(obj)
 
 def now_fields():
     now = datetime.now(timezone.utc)
@@ -69,12 +76,12 @@ async def run(symbol: str):
         async def pump_greeks():
             async for g in streamer.listen(Greeks):
                 payload = attach_latency({**g.model_dump(), "underlying": symbol, "event_type": "GREEKS", **now_fields()})
-                publisher.publish(topic_greeks, json.dumps(payload).encode("utf-8"))
+                publisher.publish(topic_greeks, json.dumps(payload, cls=DecimalEncoder).encode("utf-8"))
 
         async def pump_quotes():
             async for q in streamer.listen(Quote):
                 payload = attach_latency({**q.model_dump(), "event_type": "QUOTE", **now_fields()})
-                publisher.publish(topic_quotes, json.dumps(payload).encode("utf-8"))
+                publisher.publish(topic_quotes, json.dumps(payload, cls=DecimalEncoder).encode("utf-8"))
 
         await asyncio.gather(pump_greeks(), pump_quotes())
 

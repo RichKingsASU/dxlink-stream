@@ -1,0 +1,4 @@
+Flask==3.0.3
+requests==2.*
+google-cloud-pubsub==2.*
+gunicorn
