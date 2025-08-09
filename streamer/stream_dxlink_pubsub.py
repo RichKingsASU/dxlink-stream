@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # —————————————————————————————————————————————————————
 # CONFIGURATION
-GCP_PROJECT_ID      = os.getenv("GCP_PROJECT_ID", "ttbot-466703")
+GCP_PROJECT_ID      = os.getenv("GCP_PROJECT_ID") or os.getenv("GOOGLE_CLOUD_PROJECT") or os.getenv("PROJECT_ID") or "tt-production-468500"
 PUBSUB_TOPIC        = os.getenv("PUBSUB_TOPIC", "my-streaming-ticks")
 STREAM_SYMBOL       = os.getenv("STREAM_SYMBOL", "SPY")
 SESSION_SECRET_NAME = os.getenv("SESSION_SECRET_NAME", "tastytrade-session-token")
