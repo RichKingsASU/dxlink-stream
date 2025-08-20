@@ -1,11 +1,12 @@
 from google.cloud import bigquery
 import base64
 import json
+import os
 
 def pubsub_to_bq(event, context):
     client = bigquery.Client()
-    dataset_id = "market_data"
-    table_id = "events"
+    dataset_id = os.getenv("BIGQUERY_DATASET", "market_data")
+    table_id = os.getenv("BIGQUERY_TABLE", "events")
 
     # Parse Pub/Sub message
     data = base64.b64decode(event['data']).decode('utf-8')

@@ -12,8 +12,14 @@ gcloud functions deploy pubsub_to_bq \
   --trigger-topic=my-streaming-ticks \
   --entry-point=pubsub_to_bq \
   --region=us-central1 \
-  --memory=256MB
+  --memory=256MB \
+  --set-env-vars BIGQUERY_DATASET=my_dataset,BIGQUERY_TABLE=my_table
 ```
+
+### Environment Variables
+
+- `BIGQUERY_DATASET`: The BigQuery dataset ID (default: `market_data`)
+- `BIGQUERY_TABLE`: The BigQuery table ID (default: `events`)
 
 ## Schema
 
